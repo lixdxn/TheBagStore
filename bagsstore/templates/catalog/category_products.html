@@ -1,24 +1,15 @@
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ category.name }} - Bags Store{% endblock %}
-{% block content %}
 
-<html>
-<head>
-    <title>Bags Store</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <script src="{% static 'js/scripts.js' %}" defer></script>
-</head>
-<body>
-    <h1>Welcome to The Bags Store</h1>
-</body>
-</html>
+{% block content %}
     <h2>{{ category.name }}</h2>
     <div class="product-list">
         {% for product in products %}
         <div class="product-card">
             <a href="{% url 'product_detail' product.id %}">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" onerror="this.src='/static/no-image.jpg'">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" onerror="this.src='{% static "img/no-image.jpg" %}'">
                 <h3>{{ product.name }}</h3>
                 <p>${{ product.price }}</p>
             </a>
