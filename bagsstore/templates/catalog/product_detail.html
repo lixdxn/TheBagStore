@@ -1,12 +1,22 @@
-<!DOCTYPE html>
+{% load static %}
+{% block title %}{{ product.name }} - Bags Store{% endblock %}
+{% block content %}
 <html>
 <head>
-    <title>{{ product.name }}</title>
+    <title>Bags Store</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/scripts.js' %}" defer></script>
 </head>
 <body>
-    <h1>{{ product.name }}</h1>
-    <img src="{{ product.image.url }}" alt="{{ product.name }}">
-    <p>{{ product.description }}</p>
-    <p>Price: {{ product.price }} USD</p>
+    <h1>Welcome to The Bags Store</h1>
 </body>
 </html>
+
+    <div class="product-detail">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" onerror="this.src='/static/no-image.jpg'">
+        <h2>{{ product.name }}</h2>
+        <p>{{ product.description }}</p>
+        <p class="price">${{ product.price }}</p>
+    </div>
+{% endblock %}
+

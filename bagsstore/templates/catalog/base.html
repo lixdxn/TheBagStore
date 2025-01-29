@@ -1,0 +1,29 @@
+{% load static %}
+<html>
+<head>
+    <title>Bags Store</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/scripts.js' %}" defer></script>
+</head>
+<body>
+    <h1>Welcome to The Bags Store</h1>
+</body>
+
+</html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bags Store{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <header>
+        <h1><a href="/">The Bags Store</a></h1>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script src="/static/script.js"></script>
+</body>
+</html>
