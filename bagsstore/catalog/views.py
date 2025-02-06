@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,36 +6,67 @@ from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 
 
-
 def home(request):
-    products = Product.objects.all()
-    return render(request, 'catalog/home.html', {'products': products})
+    """Главная страница с категориями и товарами в них"""
+    categories = Category.objects.prefetch_related('product_set')
+    return render(request, 'catalog/home.html', {'categories': categories})
+
+def categories(request):
+    categories = Category.objects.all()
+    return render(request, 'catalog/categories.html', {'categories': categories})
 
 def product_detail(request, product_id):
-    product = Product.objects.get(id=product_id)
+    """Отображает страницу конкретного товара"""
+    product = get_object_or_404(Product, id=product_id)
     return render(request, 'catalog/product_detail.html', {'product': product})
 
 def category_products(request, category_id):
-    category = Category.objects.get(id=category_id)
-    products = Category.products.all()
-    return render(request, 'catalog/category_products.html', {'category': category})
+    """Отображает товары внутри выбранной категории."""
+    category = get_object_or_404(Category, id=category_id)
+    products = category.product_set.all()
+    return render(request, 'catalog/category_products.html', {'category': category, 'products': products})
 
+class ProductListAPI(APIView):
+    """Получение списка товаров и добавление нового товара."""
+    def get(self, request):
+        products = Product.objects.all()
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
 
-class AddProductAPI(APIView):
     def post(self, request):
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            print(serializer.errors)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CategoryListView(APIView):
+class ProductDetailAPI(APIView):
+    """Получение, обновление и удаление конкретного товара."""
+    def get(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        serializer = ProductSerializer(product, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        product.delete()
+        return Response({'message': 'Product deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class CategoryListAPI(APIView):
+    """Получение списка категорий и добавление новой категории."""
     def get(self, request):
-        categories = list(Category.objects.values('id', 'name', 'description'))
-        return Response({'categories': categories}, status=status.HTTP_200_OK)
+        categories = Category.objects.values('id', 'name', 'description')
+        return Response({'categories': list(categories)}, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
@@ -43,38 +74,3 @@ class CategoryListView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class ProductListView(APIView):
-    def get(self, request):
-        products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
-        return Response(serializer.data)
-
-
-class ProductDetailAPI(APIView):
-    def get(self, request, pk):
-        try:
-            product = Product.objects.get(pk=pk)
-            serializer = ProductSerializer(product)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Product.DoesNotExist:
-            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    def patch(self, request, pk):
-        try:
-            product = Product.objects.get(pk=pk)
-            serializer = ProductSerializer(product, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Product.DoesNotExist:
-            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    def delete(self, request, pk):
-        try:
-            product = Product.objects.get(pk=pk)
-            product.delete()
-            return Response({'message': 'Product deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
-        except Product.DoesNotExist:
-            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
