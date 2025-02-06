@@ -14,8 +14,12 @@ header {
 }
 
 h1 a {
-    color: orange;
+    color: #702323;
     text-decoration: none;
+}
+
+h2 {
+    color: #702323;
 }
 
 nav ul {
@@ -27,7 +31,7 @@ nav ul {
 }
 
 nav a {
-    color: white;
+    color: #702323;
     text-decoration: none;
 }
 
